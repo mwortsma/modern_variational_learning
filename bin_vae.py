@@ -8,7 +8,6 @@ import torchvision
 
 import matplotlib.pyplot as plt
 import numpy as np
-import math
 
 # HyperParameters
 learning_rate = 0.001
@@ -75,6 +74,9 @@ def loss(x, out, mu, logvar):
     cross_entropy = F.binary_cross_entropy(out, x.view(-1, im_sz), size_average=False)
     return KL_divergence + cross_entropy, KL_divergence, cross_entropy
 
+def icdf(v):
+    return torch.erfinv(2 * torch.Tensor([float(v)]) - 1) * np.sqrt(2)
+
 vae = VAE()
 print(vae)
 
@@ -92,11 +94,7 @@ KL_ = []
 XEnt_ = []
 L_ = []
 
-
-'''
-def icdf(v):
-    return torch.erfinv(2 * torch.Tensor([float(v)]) - 1) * math.sqrt(2)
-
+### sampling from inverse-CDF: ###
 z_2d = np.zeros((104, 2))
 for j in range(0,104):
     row = j/8
@@ -105,16 +103,13 @@ for j in range(0,104):
     col_z = icdf((1.0/9.0) + (1.0/9.0)*col)
     z_2d[j] = np.array([row_z, col_z])
 z_2d_tensor = to_var(torch.from_numpy(z_2d).float())
-'''
-
+### ------- ###
 
 np_sample_z = np.random.normal(0,1,(batch_sz, int(z_sz/2)))
 sample_z = to_var(torch.from_numpy(np_sample_z).float())
 reconst_images = vae.sample(sample_z)
 reconst_images = reconst_images.view(reconst_images.size(0), 1, 28, 28)
-torchvision.utils.save_image(reconst_images.data.cpu(),
-    './data/init_sample.png')
-
+torchvision.utils.save_image(reconst_images.data.cpu(), './data/init_sample.png')
 
 for epoch in range(num_epochs):
     for batch_idx, (data, _) in enumerate(data_loader):
@@ -140,11 +135,10 @@ for epoch in range(num_epochs):
 
     reconst_images, _, _ = vae(fixed_x)
     reconst_images = reconst_images.view(reconst_images.size(0), 1, 28, 28)
-    torchvision.utils.save_image(reconst_images.data.cpu(),
-        './data/reconst_images_%d.png' %(epoch+1))
+    torchvision.utils.save_image(reconst_images.data.cpu(), './data/reconst_images_%d.png' %(epoch+1))
 
 
-    '''
+    ### sampling from the latent image manifold: ###
     np_sample_z = np.zeros((batch_sz, int(z_sz/2)))
     np_sample_z[0,:] = np.random.normal(0,1,int(z_sz/2))
     for j in range(1,batch_sz):
@@ -154,22 +148,19 @@ for epoch in range(num_epochs):
 
     reconst_images = vae.sample(sample_z)
     reconst_images = reconst_images.view(reconst_images.size(0), 1, 28, 28)
-    torchvision.utils.save_image(reconst_images.data.cpu(),
-        './data/sample_%d.png' %(epoch+1))
+    torchvision.utils.save_image(reconst_images.data.cpu(), './data/sample_%d.png' %(epoch+1))
 
     np_sample_z = np.random.normal(0,1,(batch_sz, int(z_sz/2)))
     sample_z = to_var(torch.from_numpy(np_sample_z).float())
 
     reconst_images = vae.sample(sample_z)
     reconst_images = reconst_images.view(reconst_images.size(0), 1, 28, 28)
-    torchvision.utils.save_image(reconst_images.data.cpu(),
-        './data/rand_sample_%d.png' %(epoch+1))
+    torchvision.utils.save_image(reconst_images.data.cpu(), './data/rand_sample_%d.png' %(epoch+1))
 
     reconst_images = vae.sample(z_2d_tensor)
     reconst_images = reconst_images.view(reconst_images.size(0), 1, 28, 28)
-    torchvision.utils.save_image(reconst_images.data.cpu(),
-        './data/z2d_%d.png' %(epoch+1))
-    '''
+    torchvision.utils.save_image(reconst_images.data.cpu(),'./data/z2d_%d.png' %(epoch+1))
+    ### ------ ###
 
 plt.plot(KL_)
 plt.plot(XEnt_)
