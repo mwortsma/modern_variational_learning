@@ -78,6 +78,8 @@ def icdf(v):
     return torch.erfinv(2 * torch.Tensor([float(v)]) - 1) * np.sqrt(2)
 
 vae = VAE()
+if torch.cuda.is_available():
+    vae = vae.cuda()
 print(vae)
 
 optimizer = torch.optim.Adam(vae.parameters(), lr=learning_rate)
@@ -162,7 +164,7 @@ for epoch in range(num_epochs):
     torchvision.utils.save_image(reconst_images.data.cpu(),'./data/z2d_%d.png' %(epoch+1))
     ### ------ ###
 
-plt.plot(KL_)
-plt.plot(XEnt_)
-plt.plot(L_)
-plt.show()
+#plt.plot(KL_)
+#plt.plot(XEnt_)
+#plt.plot(L_)
+#plt.show()
