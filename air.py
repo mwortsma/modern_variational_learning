@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 import utils
 
-batch_sz = 1 # TODO: for now, single batches
+batch_sz = 5 # TODO: for now, single batches
 z_what_sz = 20
 
 DEVICE = torch.device('cpu')
@@ -93,7 +93,7 @@ def geom_prior_step(t, y_prev, z_pres_prev):
 def geom_prior(n):
     # n: number of steps (3 in the paper)
     y = torch.zeros(batch_sz, 1, 50, 50, device=DEVICE)
-    z_pres = torch.ones(batch_sz, 1, device=DEVICE)
+    z_pres = torch.ones(batch_sz, 1, 1, 1, device=DEVICE)
     for t in range(n):
         y, z_pres = geom_prior_step(t, y, z_pres)
         save_images(y, "step_{}.png".format(t))
